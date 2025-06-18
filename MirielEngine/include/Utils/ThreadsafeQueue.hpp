@@ -27,7 +27,6 @@ namespace MirielEngine::Utils::DataStructures {
 			T front() {
 				std::unique_lock<std::mutex> lock(_mtx);
 				_cv.wait(lock, [this]{ return !_queue.empty(); });
-				//T ret = std::move(_queue.front());
 				return std::move(_queue.front());
 			}
 

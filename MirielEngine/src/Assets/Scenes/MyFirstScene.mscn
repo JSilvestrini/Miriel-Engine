@@ -1,8 +1,8 @@
 D:/NewProjects/Miriel-Engine/MirielEngine/src/Assets/Models/Cube.obj
 {
-	1.vert 1.frag
+	D:/NewProjects/Miriel-Engine/MirielEngine/src/Assets/Shaders/GLSL/1.vert D:/NewProjects/Miriel-Engine/MirielEngine/src/Assets/Shaders/GLSL/1.frag
 	{
-		v 2.vert f 2.frag
+		v D:/NewProjects/Miriel-Engine/MirielEngine/src/Assets/Shaders/GLSL/2.vert f D:/NewProjects/Miriel-Engine/MirielEngine/src/Assets/Shaders/GLSL/2.frag
 		t 1 1 -1
 		s 1 5 0.1
 	}
@@ -42,7 +42,7 @@ D:/NewProjects/Miriel-Engine/MirielEngine/src/Assets/Models/Cube.obj
 }
 D:/NewProjects/Miriel-Engine/MirielEngine/src/Assets/Models/teapot.obj
 {
-	1.vert 1.frag
+	D:/NewProjects/Miriel-Engine/MirielEngine/src/Assets/Shaders/GLSL/1.vert D:/NewProjects/Miriel-Engine/MirielEngine/src/Assets/Shaders/GLSL/1.frag
 	{
 		t -2 -5 3
 		r 0 90 10
@@ -50,7 +50,7 @@ D:/NewProjects/Miriel-Engine/MirielEngine/src/Assets/Models/teapot.obj
 }
 D:\NewProjects\Miriel-Engine\MirielEngine\src\Assets\Models\stanford-bunny.obj
 {
-	1.vert 1.frag
+	D:/NewProjects/Miriel-Engine/MirielEngine/src/Assets/Shaders/GLSL/1.vert D:/NewProjects/Miriel-Engine/MirielEngine/src/Assets/Shaders/GLSL/1.frag
 	{
 		t 1 -2 6.5
 		r 0 113 0
@@ -89,7 +89,7 @@ l {
 
 p {
 	{
-		particle.geom particle.frag
+		D:/NewProjects/Miriel-Engine/MirielEngine/src/Assets/Shaders/GLSL/particle.geom D:/NewProjects/Miriel-Engine/MirielEngine/src/Assets/Shaders/GLSL/particle.frag
 		p 0 0 0
 		c 1 1 1
 	}

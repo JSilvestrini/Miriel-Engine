@@ -22,7 +22,12 @@ namespace MirielEngine::Core {
 	struct Texture {
 		unsigned int ID;
 		std::string type;	// TODO: replace with enum
-		aiString path;		// TODO: Replace with something smaller
+		aiString path;		// TODO: Replace with something smaller?
+	};
+
+	struct Shader {
+		size_t ID;
+		bool loaded;
 	};
 
 	struct Vertex {
@@ -33,40 +38,77 @@ namespace MirielEngine::Core {
 	};
 
 	struct Object {
+		std::string vertexShaderName;
+		std::string fragmentShaderName;
+		std::string path;
 		std::vector<Vertex> vertices;
 		std::vector<unsigned int> indices;
 		std::vector<Texture> textures;
-		std::string vertexShaderID;
-		std::string fragmentShaderID;
+
+		std::string getName();
 	};
 
-	struct Particles {
-		std::vector<glm::vec3> positions;
-		std::vector<glm::vec3> colors;
-		std::vector<float> lifetime;
+	struct ParticleSpawner {
+		std::vector<std::string> shaders;
+		std::vector<glm::vec3> particlePositions;
+		std::vector<float> particleLifetimes;
+		glm::vec3 position;
+		glm::vec3 color;
 		// give a certain program so that the particles choose their own shader, issue for Vulkan and D3D12 since they have entire pipelines
 	};
 
 	struct ObjectInstance {
 		// materials or colors later?
-		glm::mat4 translation;
-		glm::mat4 scale;
-		glm::quat rotation;
-		unsigned int shaderID;
+		// TODO: Check if shader name is default shader for object, ignore if true
+		std::string vertexShaderName;
+		std::string fragmentShaderName;
+		Shader shaderProgram; // TODO: Check wording and feasibility
+		glm::mat4 mTranslation;
+		glm::mat4 mScale;
+		glm::quat mRotation;
+		glm::vec3 vTranslation;
+		glm::vec3 vScale;
+		glm::vec3 vRotation;
+
+		ObjectInstance(const Object& o);
+		~ObjectInstance();
+
+		void updateTranslation();
+		void updateScale();
+		void updateRotation();
 	};
 
 	struct Scene {
-		std::unordered_map<std::string, size_t> loadedObjectNames;
+		std::unordered_map<std::string, size_t> loadedObjectNames; // <- Could potentially be replaced by a vector assuming that objects are grouped properly in file
 		std::unordered_map<size_t, std::vector<ObjectInstance>> objectInstances;
+		std::unordered_map<std::string, Shader> loadedShaderCombinations;
+		TextureLoadFunction textureLoader;
+		std::string scenePath;
 		std::vector<Object> objects;
-		std::vector<Particles> particles;
-		std::vector<Light> lights;
+		std::vector<ParticleSpawner> particles;
+
+		std::vector<Light> pointLights;
+		std::vector<Light> directionalLights;
+
 		Camera camera;
 
-		void loadSceneFile(const std::string& sceneName, const TextureLoadFunction& textureLoader);
-		void loadSceneObject(std::ifstream* sceneFile, const std::string& objName, const TextureLoadFunction& textureLoader);
+		void setTextureLoader(const TextureLoadFunction& textureLoaderFunction);
+
+		void loadSceneFile(const std::string& sceneName);
+		void loadSceneObject(std::ifstream* sceneFile, const std::string& objName);
 		void loadSceneParticle(std::ifstream* sceneFile);
 		void loadSceneCamera(std::ifstream* sceneFile);
 		void loadSceneLight(std::ifstream* sceneFile);
+
+		void addPointLight();
+		void addDirectionalLight();
+		void addObjectInstance(size_t index);
+		void switchVertShader(size_t objectIndex, size_t instanceIndex);
+		void switchFragShader(size_t objectIndex, size_t instanceIndex);
+		void addObject();
+
+		void saveScene();
+		void saveSceneAs();
+		void newScene();
 	};
 }

@@ -1,10 +1,14 @@
 #include "Utils/MirielEngineWindow.hpp"
+
 #include "Utils/WindowCallbacks.hpp"
 
 namespace MirielEngine::Core {
+	std::string fontName;
+	int fontSize;
+	int highDPIScaleFactor;
 	GLFWwindow* createWindow(RENDER_BACKEND backend) {
 		using enum RENDER_BACKEND;
-		GLFWmonitor* monitor = NULL;//glfwGetPrimaryMonitor();
+		GLFWmonitor* monitor = NULL;//glfwGetPrimaryMonitor(); // This allows for full screen, but it messes with launch time
 		GLFWwindow* window = NULL;
 
 		if (backend == DX12) {
@@ -17,13 +21,22 @@ namespace MirielEngine::Core {
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 			window = glfwCreateWindow(1920, 1080, "Miriel Engine - OpenGL", monitor, NULL);
-		} else {
+		} else if (backend == VULKAN) {
 			MirielEngine::Utils::GlobalLogger->log("Creating a Vulkan Window.");
 			// TODO: Set Hints on Window...
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 			// TODO: More Hints
 			window = glfwCreateWindow(1920, 1080, "Miriel Engine - Vulkan", monitor, NULL);
+		} else {
+			// This would be Metal once it is added
+			MirielEngine::Utils::GlobalLogger->log("Creating a Metal Window.");
+			// TODO: Set Hints on Window...
+			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+			// TODO: More Hints
+			window = glfwCreateWindow(1920, 1080, "Miriel Engine - Metal", monitor, NULL);
 		}
+
+		glfwSwapInterval(0);
 
 		if (window == NULL) {
 			throw MirielEngine::Errors::WindowCreationError("Failed to Create Window.");
@@ -36,13 +49,14 @@ namespace MirielEngine::Core {
 		// TODO: Set these with Custom Callbacks
 		// TODO: Do Char Callback to Close Window, Then Sizing, Framebuffer, Refresh Callbacks, Others can Wait
 		glfwSetKeyCallback(window, MirielEngine::Utils::WindowCallbacks::keyCallBack);
+		// TODO: Three of these are probably going to have to be created by the backends
 		glfwSetFramebufferSizeCallback(window, NULL);
 		glfwSetWindowSizeCallback(window, NULL);
 		glfwSetJoystickCallback(NULL);
 		glfwSetWindowRefreshCallback(window, NULL);
-		glfwSetMouseButtonCallback(window, NULL);
-		glfwSetScrollCallback(window, NULL);
-		glfwSetCursorPosCallback(window, NULL);
+		glfwSetMouseButtonCallback(window, MirielEngine::Utils::WindowCallbacks::mouseButtonCallBack);
+		glfwSetScrollCallback(window, MirielEngine::Utils::WindowCallbacks::mouseScrollCallBack);
+		glfwSetCursorPosCallback(window, MirielEngine::Utils::WindowCallbacks::mouseMovementCallBack);
 		return;
 	}
 }

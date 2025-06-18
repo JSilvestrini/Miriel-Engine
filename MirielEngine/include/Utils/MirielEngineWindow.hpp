@@ -6,7 +6,8 @@
 enum class RENDER_BACKEND {
 	DX12,
 	OPENGL,
-	VULKAN
+	VULKAN,
+	METAL
 };
 
 namespace MirielEngine::Core {

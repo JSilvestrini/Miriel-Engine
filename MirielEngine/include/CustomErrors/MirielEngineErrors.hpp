@@ -42,6 +42,14 @@ namespace MirielEngine::Errors {
 			virtual char const* what() const;
 	};
 
+	class DearImGUIError : public std::exception {
+		private:
+		const char* message;
+		public:
+		DearImGUIError(char const* const message);
+		virtual char const* what() const;
+	};
+
 	class OpenGLUtilError : public std::exception {
 		private:
 		const char* message;

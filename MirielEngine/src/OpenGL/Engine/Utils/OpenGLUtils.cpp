@@ -34,7 +34,7 @@ namespace MirielEngine::OpenGL {
 	}
 
 	GLuint createShader(const char* shaderName, GLenum type) {
-		std::string shaderDir = std::filesystem::current_path().string() + "/src/Assets/Shaders/GLSL/" + shaderName;
+		std::string shaderDir = shaderName;
 		std::ifstream shaderFile(shaderDir, std::ios::in);
 
 		if (!shaderFile.is_open() || shaderFile.bad()) {

@@ -1,6 +1,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 
 #include <stb_image.h>
+#include <nfd.h>
 //#define STB_IMAGE_WRITE_IMPLEMENTATION <- might need this is I choose to perform image compression or use GPU to create noise textures
 #include "Utils/mainUtils.hpp"
 #include "Utils/MirielEngineCore.hpp"
@@ -36,11 +37,16 @@ int main(int argc, char* argv[]) {
 	} else if (std::string(argv[2]) == std::string("Vulkan")) {
 		backend = RENDER_BACKEND::VULKAN;
 		MirielEngine::Utils::GlobalLogger->log("Using Vulkan Backend.");
+	} else if (std::string(argv[2]) == std::string("Metal")) {
+		backend = RENDER_BACKEND::METAL;
+		MirielEngine::Utils::GlobalLogger->log("Using Metal Backend.");
 	} else {
-		MirielEngine::Utils::GlobalLogger->log("Expected One of the Following After '-e': 'DX12', 'OpenGL', or 'Vulkan'.");
+		MirielEngine::Utils::GlobalLogger->log("Expected One of the Following After '-e': 'DX12', 'OpenGL', 'Vulkan', or 'Metal'.");
 		MirielEngine::Utils::GlobalLogger->cleanup();
-		throw MirielEngine::Errors::MainFunctionError("Expected One of the Following After '-e': 'DX12', 'OpenGL', or 'Vulkan'.");
+		throw MirielEngine::Errors::MainFunctionError("Expected One of the Following After '-e': 'DX12', 'OpenGL', 'Vulkan', or 'Metal'.");
 	}
+
+	NFD_Init();
 
 	try {
 		MirielEngine::Core::StartBackend(backend);
@@ -48,8 +54,10 @@ int main(int argc, char* argv[]) {
 		MirielEngine::Utils::GlobalLogger->log(e.what());
 		MirielEngine::Utils::GlobalLogger->log("Program Finished Running: Cleaning Up Logger.");
 		MirielEngine::Utils::GlobalLogger->cleanup();
+		NFD_Quit();
 	}
 
 	MirielEngine::Utils::GlobalLogger->log("Program Finished Running: Cleaning Up Logger.");
 	MirielEngine::Utils::GlobalLogger->cleanup();
+	NFD_Quit();
 }

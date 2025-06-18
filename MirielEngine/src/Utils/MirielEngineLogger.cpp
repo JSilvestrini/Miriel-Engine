@@ -34,11 +34,13 @@ namespace MirielEngine::Utils {
 
 				file << out.str().c_str();
 			}
+
+			file.flush();
 		};
 
 		while (MirielEngine::Utils::GlobalLogger->getProgramRunning() || !msgBuffer->empty()) {
 			LoggingLoop(1, 32);
-			std::this_thread::sleep_for(std::chrono::milliseconds(2));
+			std::this_thread::sleep_for(std::chrono::milliseconds(20));
 		}
 
 		MirielEngine::Utils::GlobalLogger->log("Within Thread: Application Finished, Finishing Logging.");

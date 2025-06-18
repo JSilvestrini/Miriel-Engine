@@ -36,6 +36,13 @@ namespace MirielEngine::Errors {
 		return message;
 	}
 
+	/*			DEARIMGUI ERROR				*/
+	DearImGUIError::DearImGUIError(char const* const message) : message(message) {}
+
+	char const* DearImGUIError::what() const {
+		return message;
+	}
+
 	/*			OPENGL UTILS ERROR				*/
 	OpenGLUtilError::OpenGLUtilError(char const* const message) : message(message) {}
 
