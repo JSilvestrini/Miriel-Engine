@@ -310,7 +310,7 @@ namespace MirielEngine::Core {
 	void Scene::loadSceneFile(const std::string& sceneName) {
 		// TODO: If there is a scene already loaded, need to reset the graphics API stuff, like VBO's, programs/ pipelines, etc.
 		MirielEngine::Utils::GlobalLogger->log("Opening Scene File " + sceneName  + ".");
-		std::string name = std::filesystem::current_path().string() + "/src/Assets/Scenes/" + sceneName;
+		std::string name = sceneName;
 		scenePath = name;
 		std::ifstream sceneFile(name);
 
@@ -345,11 +345,6 @@ namespace MirielEngine::Core {
 
 		sceneFile.close();
 	}
-
-	void Scene::setTextureLoader(const TextureLoadFunction& textureLoadFunction) {
-		textureLoader = textureLoadFunction;
-	}
-
 
 	ObjectInstance::ObjectInstance(const Object& o) {
 		mTranslation = glm::mat4(1.0f);
@@ -386,8 +381,10 @@ namespace MirielEngine::Core {
 
 	void Scene::addObjectInstance(size_t index) {
 		ObjectInstance i{objects[index]};
-		i.shaderProgram = loadedShaderCombinations[i.vertexShaderName + " " + i.fragmentShaderName];
 		objectInstances[index].push_back(i);
+
+		if (i.vertexShaderName.empty() || i.fragmentShaderName.empty()) { return; }
+		i.shaderProgram = loadedShaderCombinations[i.vertexShaderName + " " + i.fragmentShaderName];
 	}
 
 	void Scene::switchVertShader(size_t objectIndex, size_t instanceIndex) {
@@ -408,16 +405,17 @@ namespace MirielEngine::Core {
 		oss << "User Selected New Item: " << outPath;
 		MirielEngine::Utils::GlobalLogger->log(oss.str());
 
-		auto instance = objectInstances[objectIndex][instanceIndex];
-		instance.vertexShaderName = outPath;
+		objectInstances[objectIndex][instanceIndex].vertexShaderName = outPath;
 
-		std::string key = instance.vertexShaderName + " " + instance.fragmentShaderName;
+		MirielEngine::Utils::GlobalLogger->log("New Vertex Shader Added.");
+
+		if (objectInstances[objectIndex][instanceIndex].fragmentShaderName.empty()) { return; }
+
+		std::string key = objectInstances[objectIndex][instanceIndex].vertexShaderName + " " + objectInstances[objectIndex][instanceIndex].fragmentShaderName;
 
 		if (!loadedShaderCombinations.contains(key)) {
 			loadedShaderCombinations[key] = Shader{0, false};
 		}
-
-		MirielEngine::Utils::GlobalLogger->log("New Vertex Shader Added.");
 
 		NFD_FreePathU8(outPath);
 	}
@@ -440,16 +438,17 @@ namespace MirielEngine::Core {
 		oss << "User Selected New Item: " << outPath;
 		MirielEngine::Utils::GlobalLogger->log(oss.str());
 
-		auto instance = objectInstances[objectIndex][instanceIndex];
-		instance.fragmentShaderName = outPath;
+		objectInstances[objectIndex][instanceIndex].fragmentShaderName = outPath;
 
-		std::string key = instance.vertexShaderName + " " + instance.fragmentShaderName;
+		MirielEngine::Utils::GlobalLogger->log("New Fragment Shader Added.");
+
+		if (objectInstances[objectIndex][instanceIndex].vertexShaderName.empty()) { return; }
+
+		std::string key = objectInstances[objectIndex][instanceIndex].vertexShaderName + " " + objectInstances[objectIndex][instanceIndex].fragmentShaderName;
 
 		if (!loadedShaderCombinations.contains(key)) {
 			loadedShaderCombinations[key] = Shader{ 0, false };
 		}
-
-		MirielEngine::Utils::GlobalLogger->log("New Fragment Shader Added.");
 
 		NFD_FreePathU8(outPath);
 	}
@@ -478,8 +477,13 @@ namespace MirielEngine::Core {
 
 		Object o{};
 		o.path = outPath;
-		o.vertexShaderName = "1.vert";
-		o.fragmentShaderName = "1.frag";
+
+		if (!loadedShaderCombinations.empty()) {
+			std::string loadedShader = loadedShaderCombinations.begin()->first;
+			size_t splitIndex = loadedShader.find(' ');
+			o.vertexShaderName = loadedShader.substr(0, splitIndex);
+			o.fragmentShaderName = loadedShader.substr(splitIndex + 1, loadedShader.size() - o.vertexShaderName.size() - 1);
+		}
 
 		MirielEngine::Core::loadObject(outPath, &o, textureLoader);
 		loadedObjectNames[outPath] = objects.size();
@@ -529,46 +533,57 @@ namespace MirielEngine::Core {
 
 		std::ofstream sceneFile(scenePath, std::ofstream::trunc | std::ofstream::out);
 
-		for (size_t i = 0; i < objects.size(); i++) {
-			sceneFile << objects[i].path << "\n{\n";
-			sceneFile << "\t" << objects[i].vertexShaderName << " " << objects[i].fragmentShaderName;
+		if (!loadedShaderCombinations.empty()) {
 
-			for (size_t j = 0; j < objectInstances[i].size(); j++) {
-				sceneFile << "\n\t{";
-				glm::vec3 t = objectInstances[i][j].vTranslation;
-				glm::vec3 r = objectInstances[i][j].vRotation;
-				glm::vec3 s = objectInstances[i][j].vScale;
+			for (size_t i = 0; i < objects.size(); i++) {
+				sceneFile << objects[i].path << "\n{\n";
 
-				std::string ex = "\n\t\tf ";
-				if (objectInstances[i][j].vertexShaderName != objects[i].vertexShaderName) {
-					sceneFile << "\n\t\tv " << objectInstances[i][j].vertexShaderName;
-					ex = " f ";
+				if (objects[i].vertexShaderName.empty() || objects[i].fragmentShaderName.empty()) {
+					std::string loadedShader = loadedShaderCombinations.begin()->first;
+					size_t splitIndex = loadedShader.find(' ');
+					objects[i].vertexShaderName = loadedShader.substr(0, splitIndex);
+					objects[i].fragmentShaderName = loadedShader.substr(splitIndex + 1, loadedShader.size() - objects[i].vertexShaderName.size() - 1);
 				}
 
-				if (objectInstances[i][j].fragmentShaderName != objects[i].fragmentShaderName) {
-					sceneFile << ex << objectInstances[i][j].fragmentShaderName;
+				sceneFile << "\t" << objects[i].vertexShaderName << " " << objects[i].fragmentShaderName;
+
+				for (size_t j = 0; j < objectInstances[i].size(); j++) {
+					sceneFile << "\n\t{";
+					glm::vec3 t = objectInstances[i][j].vTranslation;
+					glm::vec3 r = objectInstances[i][j].vRotation;
+					glm::vec3 s = objectInstances[i][j].vScale;
+
+					std::string ex = "\n\t\tf ";
+					if (objectInstances[i][j].vertexShaderName != objects[i].vertexShaderName) {
+						sceneFile << "\n\t\tv " << objectInstances[i][j].vertexShaderName;
+						ex = " f ";
+					}
+
+					if (objectInstances[i][j].fragmentShaderName != objects[i].fragmentShaderName) {
+						sceneFile << ex << objectInstances[i][j].fragmentShaderName;
+					}
+
+					ex = "\t";
+
+					if (t != glm::vec3(0.0, 0.0, 0.0)) {
+						sceneFile << "\n\t\tt " << t.x << " " << t.y << " " << t.z;
+						ex = "\n\t";
+					}
+
+					if (r != glm::vec3(0.0, 0.0, 0.0)) {
+						sceneFile << "\n\t\tr " << r.x << " " << r.y << " " << r.z;
+						ex = "\n\t";
+					}
+
+					if (s != glm::vec3(1.0, 1.0, 1.0)) {
+						sceneFile << "\n\t\ts " << s.x << " " << s.y << " " << s.z;
+						ex = "\n\t";
+					}
+
+					sceneFile << ex << "}\n";
 				}
-
-				ex = "\t";
-
-				if (t != glm::vec3(0.0, 0.0, 0.0)) {
-					sceneFile << "\n\t\tt " << t.x << " " << t.y << " " << t.z;
-					ex = "\n\t";
-				}
-
-				if (r != glm::vec3(0.0, 0.0, 0.0)) {
-					sceneFile << "\n\t\tr " << r.x << " " << r.y << " " << r.z;
-					ex = "\n\t";
-				}
-
-				if (s != glm::vec3(1.0, 1.0, 1.0)) {
-					sceneFile << "\n\t\ts " << s.x << " " << s.y << " " << s.z;
-					ex = "\n\t";
-				}
-
-				sceneFile << ex << "}\n";
+				sceneFile << "}\n";
 			}
-			sceneFile << "}\n";
 		}
 
 		sceneFile << "\nl {";
@@ -634,5 +649,38 @@ namespace MirielEngine::Core {
 	void Scene::newScene() {
 		// TODO: Needs to reset all buffers and unload everthing that needs to be unloaded.
 		// Can use the open dialogue like in open loader, then call a reset function, then load scene and a build function from parent
+		loadedObjectNames.clear();
+		objectInstances.clear();
+		objects.clear();
+		loadedShaderCombinations.clear();
+		pointLights.clear();
+		directionalLights.clear();
+		particles.clear();
+		scenePath = "";
+		clearAPIFunction();
+	}
+
+	void Scene::loadScene() {
+		MirielEngine::Utils::GlobalLogger->log("User is Loading New Scene.");
+		nfdu8char_t* outPath;
+		nfdu8filteritem_t filters[1] = { {"Miriel Engine Scene File", "mscn"} };
+		nfdopendialogu8args_t args = { 0 };
+		args.filterList = filters;
+		args.filterCount = 1;
+		MirielEngine::Utils::GlobalLogger->log("Opening Dialogue Box with NFD.");
+		nfdresult_t res = NFD_OpenDialogU8_With(&outPath, &args);
+
+		if (res != NFD_OKAY) {
+			return;
+		}
+
+		std::ostringstream oss;
+		oss << "User Selected New Item: " << outPath;
+		MirielEngine::Utils::GlobalLogger->log(oss.str());
+
+		newScene();
+		loadSceneFile(outPath);
+
+		NFD_FreePathU8(outPath);
 	}
 }

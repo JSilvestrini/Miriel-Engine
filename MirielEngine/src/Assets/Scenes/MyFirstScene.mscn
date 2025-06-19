@@ -63,6 +63,30 @@ D:\NewProjects\Miriel-Engine\MirielEngine\src\Assets\Models\stanford-bunny.obj
 		s 20 20 20
 	}
 }
+D:\NewProjects\Miriel-Engine\MirielEngine\src\Assets\Models\suzanne.obj
+{
+	D:/NewProjects/Miriel-Engine/MirielEngine/src/Assets/Shaders/GLSL/1.vert D:/NewProjects/Miriel-Engine/MirielEngine/src/Assets/Shaders/GLSL/1.frag
+	{
+		t -2 0 0
+		r 0 60 0
+	}
+}
+D:\NewProjects\Miriel-Engine\MirielEngine\src\Assets\Models\xyzrgb_dragon.obj
+{
+	D:/NewProjects/Miriel-Engine/MirielEngine/src/Assets/Shaders/GLSL/1.vert D:/NewProjects/Miriel-Engine/MirielEngine/src/Assets/Shaders/GLSL/1.frag
+	{
+		t 8 -1.5 5
+		r 0 45 0
+		s 0.01 0.01 0.01
+	}
+}
+D:\NewProjects\Miriel-Engine\MirielEngine\src\Assets\Models\Cube.gltf
+{
+	D:/NewProjects/Miriel-Engine/MirielEngine/src/Assets/Shaders/GLSL/1.vert D:/NewProjects/Miriel-Engine/MirielEngine/src/Assets/Shaders/GLSL/1.frag
+	{
+		t 2 0 0
+	}
+}
 
 l {
 	{

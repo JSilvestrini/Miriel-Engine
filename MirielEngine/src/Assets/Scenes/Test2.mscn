@@ -1,0 +1,14 @@
+D:\NewProjects\Miriel-Engine\MirielEngine\src\Assets\Models\teapot.obj
+{
+	D:\NewProjects\Miriel-Engine\MirielEngine\src\Assets\Shaders\GLSL\1.vert D:\NewProjects\Miriel-Engine\MirielEngine\src\Assets\Shaders\GLSL\1.frag
+	{
+		t 0 -1 0
+		r 0 45 0
+	}
+}
+
+l {	}
+
+p {	}
+
+c 10 0 10 0 0 0

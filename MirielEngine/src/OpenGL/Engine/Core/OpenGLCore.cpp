@@ -17,9 +17,10 @@ namespace MirielEngine::OpenGL {
 		MirielEngine::Utils::GlobalLogger->log("Creating OpenGL Core.");
 		currentProgram = 0;
 		scene = std::make_shared<MirielEngine::Core::Scene>();
-		scene->setTextureLoader(([this](const std::string& s) {return loadTexture(s); }));
+		scene->textureLoader = ([this](const std::string& s) {return loadTexture(s); });
+		scene->clearAPIFunction = ([this]() { return cleanUp(); });
 		try {
-			scene->loadSceneFile("MyFirstScene.mscn");
+			scene->newScene();
 		} catch (MirielEngine::Errors::ObjectLoaderError& e) {
 			MirielEngine::Utils::GlobalLogger->log(e.what());
 		}
@@ -33,10 +34,7 @@ namespace MirielEngine::OpenGL {
 		//glFrontFace(GL_CW); // GL_CCW
 	}
 
-	OpenGLCore::~OpenGLCore() {
-		MirielEngine::Utils::GlobalLogger->log("Destroying OpenGL Core.");
-		// destroy buffers
-		// TODO:
+	void OpenGLCore::cleanUp() {
 		for (GLuint program : programs) {
 			glDeleteProgram(program);
 		}
@@ -51,14 +49,28 @@ namespace MirielEngine::OpenGL {
 			}
 		}
 
+		objectEBOs.clear();
+		objectVAOs.clear();
+		objectVBOs.clear();
+		UBOIDs.clear();
+		programs.clear();
+	}
+
+	OpenGLCore::~OpenGLCore() {
+		MirielEngine::Utils::GlobalLogger->log("Destroying OpenGL Core.");
+		cleanUp();
 		glDeleteBuffers(UBOs.size(), UBOs.data());
+		UBOs.clear();
 	}
 
 	void OpenGLCore::draw(int width, int height) {
 		updateBuffers();
 		updateProgram();
+
+		if (programs.empty() || objectVAOs.empty() || objectEBOs.empty() || objectVBOs.empty() || UBOs.empty()) { return; }
+
 		glm::mat4 view = glm::lookAt(scene->camera.pos, scene->camera.target, scene->camera.camUp);
-		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)width/(float)height, 0.1f, 100.0f);
+		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)width/(float)height, 0.1f, 1000.0f);
 
 		glBindBuffer(GL_UNIFORM_BUFFER, UBOs[0]);
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(projection));
@@ -90,6 +102,7 @@ namespace MirielEngine::OpenGL {
 	}
 
 	void OpenGLCore::updateBuffers() {
+		// TODO: Check object loading again
 		if (scene->objects.size() == objectVBOs.size()) { return; }
 
 		size_t offset = scene->objects.size() - objectVBOs.size();

@@ -35,9 +35,11 @@ namespace MirielEngine::Utils {
 			ImGui::BeginMainMenuBar();
 			if (ImGui::BeginMenu("File")) {
 				if (ImGui::MenuItem("New Scene")) {
-					// new scene
-					// TODO: need access to a core function?
-					// have to use a function that clears everything from shaders to buffers
+					currentObject = 0;
+					currentList = 0;
+					selectedName = "";
+					auto sharedScene = scene.lock();
+					sharedScene->newScene();
 				}
 
 				if (ImGui::MenuItem("Save Scene")) {
@@ -51,14 +53,15 @@ namespace MirielEngine::Utils {
 				}
 
 				if (ImGui::MenuItem("Load Scene")) {
-					// load new scene
-					// TODO: need access to a core function?
-					// check new scene notes
+					currentObject = 0;
+					currentList = 0;
+					selectedName = "";
+					auto sharedScene = scene.lock();
+					sharedScene->loadScene();
 				}
 				ImGui::EndMenu();
 			}
 			ImGui::EndMainMenuBar();
-
 		}
 
 		{
@@ -165,18 +168,18 @@ namespace MirielEngine::Utils {
 				switch (currentList) {
 					case 0:
 						ImGui::ColorPicker3("Color", glm::value_ptr(sharedScene->directionalLights[currentObject].color));
-						ImGui::InputFloat3("Direction", glm::value_ptr(sharedScene->directionalLights[currentObject].value), "%0.1f");
+						ImGui::InputFloat3("Direction", glm::value_ptr(sharedScene->directionalLights[currentObject].value), "%0.01f");
 						break;
 					case 1:
 						ImGui::ColorPicker3("Color", glm::value_ptr(sharedScene->pointLights[currentObject].color));
-						ImGui::InputFloat3("Position", glm::value_ptr(sharedScene->pointLights[currentObject].value), "%0.1f");
+						ImGui::InputFloat3("Position", glm::value_ptr(sharedScene->pointLights[currentObject].value), "%0.01f");
 						break;
 					default:
-						ImGui::InputFloat3("Translation", glm::value_ptr(sharedScene->objectInstances[currentList - 2][currentObject].vTranslation), "%0.1f");
+						ImGui::InputFloat3("Translation", glm::value_ptr(sharedScene->objectInstances[currentList - 2][currentObject].vTranslation), "%0.01f");
 						sharedScene->objectInstances[currentList - 2][currentObject].updateTranslation();
-						ImGui::InputFloat3("Scale", glm::value_ptr(sharedScene->objectInstances[currentList - 2][currentObject].vScale), "%0.1f");
+						ImGui::InputFloat3("Scale", glm::value_ptr(sharedScene->objectInstances[currentList - 2][currentObject].vScale), "%0.01f");
 						sharedScene->objectInstances[currentList - 2][currentObject].updateScale();
-						ImGui::InputFloat3("Rotation", glm::value_ptr(sharedScene->objectInstances[currentList - 2][currentObject].vRotation), "%0.1f");
+						ImGui::InputFloat3("Rotation", glm::value_ptr(sharedScene->objectInstances[currentList - 2][currentObject].vRotation), "%0.01f");
 						sharedScene->objectInstances[currentList - 2][currentObject].updateRotation();
 
 						ImGui::Text(sharedScene->objectInstances[currentList - 2][currentObject].vertexShaderName.c_str());

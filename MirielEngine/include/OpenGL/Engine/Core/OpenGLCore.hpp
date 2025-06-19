@@ -24,6 +24,7 @@ namespace MirielEngine::OpenGL {
 		public:
 			OpenGLCore();
 			~OpenGLCore();
+			void cleanUp();
 			void createBuffers();
 			void updateBuffers();
 			void createProgram();

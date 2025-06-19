@@ -18,6 +18,7 @@
 
 namespace MirielEngine::Core {
 	using TextureLoadFunction = std::function<unsigned int(const std::string&)>;
+	using CleanGraphicsAPIFunction = std::function<void ()>;
 
 	struct Texture {
 		unsigned int ID;
@@ -27,6 +28,7 @@ namespace MirielEngine::Core {
 
 	struct Shader {
 		size_t ID;
+		size_t count; // reference count this so I can delete programs when there are 0 using it
 		bool loaded;
 	};
 
@@ -83,6 +85,7 @@ namespace MirielEngine::Core {
 		std::unordered_map<size_t, std::vector<ObjectInstance>> objectInstances;
 		std::unordered_map<std::string, Shader> loadedShaderCombinations;
 		TextureLoadFunction textureLoader;
+		CleanGraphicsAPIFunction clearAPIFunction;
 		std::string scenePath;
 		std::vector<Object> objects;
 		std::vector<ParticleSpawner> particles;
@@ -91,8 +94,6 @@ namespace MirielEngine::Core {
 		std::vector<Light> directionalLights;
 
 		Camera camera;
-
-		void setTextureLoader(const TextureLoadFunction& textureLoaderFunction);
 
 		void loadSceneFile(const std::string& sceneName);
 		void loadSceneObject(std::ifstream* sceneFile, const std::string& objName);
@@ -110,5 +111,6 @@ namespace MirielEngine::Core {
 		void saveScene();
 		void saveSceneAs();
 		void newScene();
+		void loadScene();
 	};
 }
